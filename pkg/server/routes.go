@@ -37,16 +37,16 @@ func Create(appState *models.AppState) *http.Server {
 	}
 }
 
-//	@title						Zep REST-like API
-//	@version					0.x
-//	@license.name				Apache 2.0
-//	@license.url				http://www.apache.org/licenses/LICENSE-2.0.html
-//	@BasePath					/api/v1
-//	@schemes					http https
-//	@securityDefinitions.apikey	Bearer
-//	@in							header
-//	@name						Authorization
-//	@description				Type "Bearer" followed by a space and JWT token.
+// @title						Zep REST-like API
+// @version					0.x
+// @license.name				Apache 2.0
+// @license.url				http://www.apache.org/licenses/LICENSE-2.0.html
+// @BasePath					/api/v1
+// @schemes					http https
+// @securityDefinitions.apikey	Bearer
+// @in							header
+// @name						Authorization
+// @description				Type "Bearer" followed by a space and JWT token.
 func setupRouter(appState *models.AppState) *chi.Mux {
 	maxRequestSize := appState.Config.Server.MaxRequestSize
 	if maxRequestSize == 0 {
@@ -61,7 +61,6 @@ func setupRouter(appState *models.AppState) *chi.Mux {
 	router.Use(middleware.RealIP)
 	router.Use(middleware.CleanPath)
 	router.Use(SendVersion)
-	router.Use(middleware.Heartbeat("/healthz"))
 
 	// Only setup web routes if enabled
 	if appState.Config.Server.WebEnabled {
@@ -139,7 +138,11 @@ func setupWebRoutes(router chi.Router, appState *models.AppState) {
 }
 
 func setupAPIRoutes(router chi.Router, appState *models.AppState) {
-	router.Route("/api/v1", func(r chi.Router) {
+	router.Route("/{namespace}/api/v1", func(r chi.Router) {
+
+		// healthz route for heartbeats
+		router.Use(middleware.Heartbeat("/healthz"))
+
 		// JWT authentication on all API routes
 		if appState.Config.Auth.Required {
 			log.Info("JWT authentication required")
