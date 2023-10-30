@@ -12,6 +12,7 @@ import (
 	"github.com/getzep/zep/pkg/auth"
 	"github.com/getzep/zep/pkg/server/apihandlers"
 	"github.com/getzep/zep/pkg/server/webhandlers"
+	"github.com/go-chi/cors"
 	"github.com/go-chi/jwtauth/v5"
 
 	httpLogger "github.com/chi-middleware/logrus-logger"
@@ -61,6 +62,18 @@ func setupRouter(appState *models.AppState) *chi.Mux {
 	router.Use(middleware.RealIP)
 	router.Use(middleware.CleanPath)
 	router.Use(SendVersion)
+
+	// Configure CORS
+	corsConfig := cors.New(cors.Options{
+		// Adjust per your requirements
+		AllowedOrigins:   []string{"*"}, // allows all origins. Adjust to be more restrictive if necessary.
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	})
+	router.Use(corsConfig.Handler)
 
 	// Only setup web routes if enabled
 	if appState.Config.Server.WebEnabled {
